@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🏏 IPL HAND CRICKET | Select Any Match | YOU vs AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0a2a1a 0%, #022010 100%);
+            font-family: 'Segoe UI', 'Poppins', 'Roboto', sans-serif;
+            padding: 15px;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(255,200,80,0.08) 2%, transparent 2.5%),
+                        radial-gradient(circle at 85% 70%, rgba(255,180,50,0.06) 1.5%, transparent 2%);
+            background-size: 70px 70px, 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .game-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .game-panel {
+            background: linear-gradient(135deg, #0f2d1c, #072012);
+            border-radius: 50px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,245,150,0.2);
+            border: 1px solid rgba(255,200,70,0.4);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .floodlights {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 40px 0;
+            gap: 20px;
+        }
+        .light {
+            width: 12px;
+            height: 40px;
+            background: radial-gradient(ellipse, #ffdd88, #ffaa33);
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 0 15px #ffaa55;
+        }
+
+        /* Match Selector */
+        .match-selector-area {
+            padding: 15px 20px;
+            background: #0a241a;
+            border-bottom: 3px solid #f3b33d;
+        }
+        .selector-title {
+            color: #FFE5aa;
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .selector-title span {
+            background: #f39c12;
+            padding: 4px 12px;
+            border-radius: 30px;
+            color: #1e2a1a;
+        }
+        .matches-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 15px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .match-card {
+            background: linear-gradient(135deg, #2a4a35, #1a3524);
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            color: #FFE5aa;
+            border: 2px solid #f3b33d60;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .match-card.selected {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #1e2a1a;
+            border-color: #ffdd88;
+            box-shadow: 0 0 12px #f39c12;
+        }
+        .match-card:hover {
+            transform: scale(1.02);
+            background: #e67e22;
+            color: #1e2a1a;
+        }
+        .match-logo {
+            font-size: 1.1rem;
+        }
+
+        /* VS Display */
+        .vs-display {
+            background: #031008;
+            margin: 15px 20px 0;
+            padding: 15px 20px;
+            border-radius: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .my-team-box, .ai-team-box {
+            text-align: center;
+            flex: 1;
+            background: #00000055;
+            padding: 12px;
+            border-radius: 50px;
+        }
+        .team-icon {
+            font-size: 3rem;
+            display: block;
+        }
+        .team-fullname {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #FFD966;
+        }
+        .team-captain {
+            font-size: 0.8rem;
+            color: #bbaa77;
+        }
+        .vs-big {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: #e67e22;
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: white;
+            text-shadow: 2px 2px 0 #6c2e00;
+        }
+
+        /* Scoreboard */
+        .scoreboard {
+            padding: 20px;
+        }
+        .score-card {
+            background: #031008;
+            border-radius: 40px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+        .batting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin: 8px 0;
+        }
+        .team-name-lg {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFE5a3, #FFC857);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .runs-big {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: monospace;
+            background: #000000aa;
+            padding: 2px 18px;
+            border-radius: 50px;
+            color: #ffdd77;
+        }
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            background: #0b2a1f;
+            padding: 10px 15px;
+            border-radius: 40px;
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .target-display {
+            background: #e67e22;
+            border-radius: 40px;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Hand Cricket Controls */
+        .hand-cricket-area {
+            padding: 10px 20px 20px;
+            background: #0d261b;
+            margin: 10px;
+            border-radius: 50px;
+        }
+        .hand-title {
+            text-align: center;
+            color: #FFD966;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        .hand-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .hand-btn {
+            background: #2c4a30;
+            border: none;
+            width: 75px;
+            height: 75px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.05s linear;
+            box-shadow: 0 6px 0 #123012;
+            color: white;
+            font-family: monospace;
+        }
+        .hand-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #123012;
+        }
+        .hand-btn.six-btn {
+            background: #c97e2c;
+            box-shadow: 0 6px 0 #6b3c0a;
+        }
+        .commentary-box {
+            background: #1d2b1a;
+            border-left: 8px solid #f5b642;
+            border-radius: 40px;
+            padding: 14px;
+            text-align: center;
+            font-weight: bold;
+            color: #ffeaac;
+            margin-top: 10px;
+            min-height: 85px;
+        }
+
+        .out-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: radial-gradient(circle, #ff4400, #8b0000);
+            color: gold;
+            font-size: 4rem;
+            font-weight: 900;
+            padding: 20px 50px;
+            border-radius: 70px;
+            z-index: 1000;
+            white-space: nowrap;
+            box-shadow: 0 0 80px red;
+            font-family: 'Impact', sans-serif;
+            pointer-events: none;
+            transition: 0.2s;
+        }
+        .out-animation.show {
+            transform: translate(-50%, -50%) scale(1);
+            animation: outBlast 0.6s ease-out forwards;
+        }
+        @keyframes outBlast {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            60% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; visibility: hidden; }
+        }
+
+        .reset-btn {
+            background: #b64926;
+            width: calc(100% - 40px);
+            margin: 0 20px 20px;
+            padding: 14px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .reset-btn:active {
+            transform: scale(0.98);
+        }
+        footer {
+            text-align: center;
+            padding: 12px;
+            color: #b9b074;
+            font-size: 0.7rem;
+        }
+        @media (max-width: 700px) {
+            .team-name-lg { font-size: 1.1rem; }
+            .runs-big { font-size: 1.6rem; }
+            .hand-btn { width: 55px; height: 55px; font-size: 1.5rem; }
+            .match-card { padding: 5px 12px; font-size: 0.7rem; }
+            .vs-big { font-size: 1.2rem; padding: 5px 12px; }
+            .team-icon { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="game-panel">
+        <div class="floodlights">
+            <div class="light"></div><div class="light"></div><div class="light"></div><div class="light"></div>
+        </div>
+
+        <!-- Match Selector - All Requested Matches -->
+        <div class="match-selector-area">
+            <div class="selector-title">🏆 <span>SELECT ANY MATCH</span> 🏆</div>
+            <div class="matches-grid" id="matchesGrid"></div>
+            <div style="text-align: center; font-size: 0.8rem; color: #ccaa66;">👇 Click any match to play | YOU = Left Team | AI = Right Team 👇</div>
+        </div>
+
+        <!-- VS Display -->
+        <div class="vs-display" id="vsDisplay">
+            <div class="my-team-box">
+                <span class="team-icon" id="myTeamIcon">🔴🦅</span>
+                <div class="team-fullname" id="myTeamName">Royal Challengers Bengaluru</div>
+                <div class="team-captain" id="myTeamCaptain">Captain: Rajat Patidar</div>
+            </div>
+            <div class="vs-big">⚡ VS ⚡</div>
+            <div class="ai-team-box">
+                <span class="team-icon" id="aiTeamIcon">🟡🦁</span>
+                <div class="team-fullname" id="aiTeamName">Chennai Super Kings</div>
+                <div class="team-captain" id="aiTeamCaptain">Captain: Ruturaj Gaikwad</div>
+            </div>
+        </div>
+
+        <!-- Scoreboard -->
+        <div class="scoreboard">
+            <div class="score-card">
+                <div class="batting-row">
+                    <span class="team-name-lg" id="battingLabel">YOU (Batting)</span>
+                    <span><span class="runs-big" id="userScore">0</span> / <span id="userWickets">0</span></span>
+                </div>
+                <div class="batting-row" style="opacity:0.7">
+                    <span class="team-name-lg" id="bowlingLabel">AI OPPONENT</span>
+                    <span><span class="runs-big" id="aiScore">0</span> / <span id="aiWickets">0</span></span>
+                </div>
+                <div class="stats-bar">
+                    <span>📊 Overs: <span id="overCount">0.0</span></span>
+                    <span>⚡ Run Rate: <span id="runRate">0.00</span></span>
+                    <span>🎯 Balls Left: <span id="ballsLeft">120</span></span>
+                </div>
+                <div id="targetDisplay" class="target-display"></div>
+            </div>
+        </div>
+
+        <!-- Hand Cricket Gameplay -->
+        <div class="hand-cricket-area">
+            <div class="hand-title">✋ HAND CRICKET • CHOOSE YOUR NUMBER (0-6) ✋</div>
+            <div class="hand-buttons" id="handButtons">
+                <button class="hand-btn" data-hand="0">0</button>
+                <button class="hand-btn" data-hand="1">1</button>
+                <button class="hand-btn" data-hand="2">2</button>
+                <button class="hand-btn" data-hand="3">3</button>
+                <button class="hand-btn" data-hand="4">4</button>
+                <button class="hand-btn six-btn" data-hand="6">6</button>
+            </div>
+            <div class="commentary-box" id="commentary">🎤 Select a match first! Then choose your number. Same number as AI = OUT!</div>
+        </div>
+
+        <button class="reset-btn" id="resetMatchBtn">🔄 RESTART CURRENT MATCH 🔄</button>
+        <footer>🏏 IPL HAND CRICKET | YOU bat first, AI bowls | 20 overs match | Same number = OUT! | Select any match above</footer>
+    </div>
+</div>
+
+<div id="outAnimation" class="out-animation">🔥 OUT! 🔥</div>
+
+<script>
+    // ---------------------------- ALL 10 IPL TEAMS WITH FULL DETAILS ----------------------------
+    const iplTeams = {
+        "csk": { id: "csk", name: "Chennai Super Kings", short: "CSK", logo: "🟡🦁", captain: "Ruturaj Gaikwad", color: "#f9d56e" },
+        "mi": { id: "mi", name: "Mumbai Indians", short: "MI", logo: "💙⚡", captain: "Hardik Pandya", color: "#0055a4" },
+        "rcb": { id: "rcb", name: "Royal Challengers Bengaluru", short: "RCB", logo: "🔴🦅", captain: "Rajat Patidar", color: "#ed1c24" },
+        "kkr": { id: "kkr", name: "Kolkata Knight Riders", short: "KKR", logo: "💜🟡", captain: "Ajinkya Rahane", color: "#3a1f6d" },
+        "gt": { id: "gt", name: "Gujarat Titans", short: "GT", logo: "💙🌟", captain: "Shubman Gill", color: "#1b2f45" },
+        "srh": { id: "srh", name: "Sunrisers Hyderabad", short: "SRH", logo: "🧡🌞", captain: "Pat Cummins", color: "#f26522" },
+        "dc": { id: "dc", name: "Delhi Capitals", short: "DC", logo: "💙🐅", captain: "Axar Patel", color: "#0078bc" },
+        "lsg": { id: "lsg", name: "Lucknow Super Giants", short: "LSG", logo: "🔵🟢", captain: "Rishabh Pant", color: "#00bfff" },
+        "pbks": { id: "pbks", name: "Punjab Kings", short: "PBKS", logo: "🔴🦁", captain: "Shreyas Iyer", color: "#ed1c24" },
+        "rr": { id: "rr", name: "Rajasthan Royals", short: "RR", logo: "💗👑", captain: "Riyan Parag", color: "#ea5a3c" }
+    };
+
+    // All Requested Matches
+    const requestedMatches = [
+        { name: "🏆 CSK vs RCB", team1: "csk", team2: "rcb" },
+        { name: "🏆 MI vs CSK", team1: "mi", team2: "csk" },
+        { name: "🏆 MI vs RCB", team1: "mi", team2: "rcb" },
+        { name: "🏆 GT vs LSG", team1: "gt", team2: "lsg" },
+        { name: "🏆 MI vs RR", team1: "mi", team2: "rr" },
+        { name: "🏆 RCB vs PBKS", team1: "rcb", team2: "pbks" },
+        { name: "🏆 KKR vs RCB", team1: "kkr", team2: "rcb" },
+        { name: "🏆 DC vs SRH", team1: "dc", team2: "srh" },
+        { name: "🏆 RCB vs SRH", team1: "rcb", team2: "srh" },
+        { name: "🏆 CSK vs LSG", team1: "csk", team2: "lsg" },
+        { name: "🏆 CSK vs KKR", team1: "csk", team2: "kkr" },
+        { name: "🏆 GT vs KKR", team1: "gt", team2: "kkr" },
+        { name: "🏆 GT vs CSK", team1: "gt", team2: "csk" },
+        { name: "🏆 GT vs RCB", team1: "gt", team2: "rcb" },
+        { name: "🏆 GT vs MI", team1: "gt", team2: "mi" },
+        { name: "🏆 RR vs PBKS", team1: "rr", team2: "pbks" },
+        { name: "🏆 SRH vs CSK", team1: "srh", team2: "csk" },
+        { name: "🏆 SRH vs MI", team1: "srh", team2: "mi" }
+    ];
+
+    // Game State
+    let userTeam = null;      // YOU (Left team)
+    let aiTeam = null;        // AI (Right team)
+    let innings = 1;          // 1 = User batting, 2 = AI batting (chase)
+    let userScore = 0, userWickets = 0;
+    let aiScore = 0, aiWickets = 0;
+    let balls = 0, overs = 0, totalBalls = 0;
+    let target = null;
+    let matchFinished = false;
+    let currentMatchIndex = 0;
+
+    // Update VS Display with team details
+    function updateVSDisplay() {
+        if (userTeam && aiTeam) {
+            document.getElementById("myTeamIcon").innerHTML = userTeam.logo;
+            document.getElementById("myTeamName").innerHTML = userTeam.name;
+            document.getElementById("myTeamCaptain").innerHTML = `Captain: ${userTeam.captain}`;
+            document.getElementById("aiTeamIcon").innerHTML = aiTeam.logo;
+            document.getElementById("aiTeamName").innerHTML = aiTeam.name;
+            document.getElementById("aiTeamCaptain").innerHTML = `Captain: ${aiTeam.captain}`;
+        }
+    }
+
+    // Update batting/bowling labels based on innings
+    function updateInningLabels() {
+        if (innings === 1) {
+            document.getElementById("battingLabel").innerHTML = `🏏 ${userTeam?.short || "YOU"} (Batting)`;
+            document.getElementById("bowlingLabel").innerHTML = `🎯 ${aiTeam?.short || "AI"} (Bowling)`;
+        } else {
+            document.getElementById("battingLabel").innerHTML = `🏏 ${aiTeam?.short || "AI"} (Batting)`;
+            document.getElementById("bowlingLabel").innerHTML = `🎯 ${userTeam?.short || "YOU"} (Need ${target ? target-1 : "?"})`;
+        }
+    }
+
+    // Refresh all score UI
+    function refreshScoreUI() {
+        document.getElementById("userScore").innerHTML = userScore;
+        document.getElementById("userWickets").innerHTML = userWickets;
+        document.getElementById("aiScore").innerHTML = aiScore;
+        document.getElementById("aiWickets").innerHTML = aiWickets;
+        
+        let overText = `${overs}.${balls}`;
+        document.getElementById("overCount").innerHTML = overText;
+        
+        let currentBattingScore = (innings === 1) ? userScore : aiScore;
+        let rr = totalBalls === 0 ? 0 : (currentBattingScore / (totalBalls / 6)).toFixed(2);
+        document.getElementById("runRate").innerHTML = rr;
+        let ballsRemaining = 120 - totalBalls;
+        document.getElementById("ballsLeft").innerHTML = ballsRemaining >= 0 ? ballsRemaining : 0;
+        
+        let targetDiv = document.getElementById("targetDisplay");
+        if (innings === 2 && target !== null && !matchFinished) {
+            targetDiv.style.display = "block";
+            let chasingScore = aiScore;
+            let need = target - chasingScore;
+            let ballsLeft = 120 - totalBalls;
+            targetDiv.innerHTML = `🎯 TARGET: ${target}  |  NEED ${need} RUNS  |  ${ballsLeft} BALLS LEFT 🎯`;
+            if (need <= 0) targetDiv.innerHTML = "🏆 VICTORY! AI CHASES DOWN TARGET! 🏆";
+            if (aiWickets >= 10 && chasingScore < target) targetDiv.innerHTML = "💀 ALL OUT! YOU WIN! 💀";
+        } else {
+            targetDiv.style.display = "none";
+        }
+    }
+
+    // Trigger OUT animation
+    function triggerOutAnimation() {
+        const outEl = document.getElementById("outAnimation");
+        outEl.classList.remove("show");
+        void outEl.offsetWidth;
+        outEl.classList.add("show");
+        setTimeout(() => outEl.classList.remove("show"), 700);
+    }
+
+    // Check innings end & match result
+    function checkInningsEnd() {
+        if (matchFinished) return true;
+        
+        let currentWickets = (innings === 1) ? userWickets : aiWickets;
+        let currentScore = (innings === 1) ? userScore : aiScore;
+        
+        if (currentWickets >= 10) {
+            triggerOutAnimation();
+            if (innings === 1) {
+                target = userScore + 1;
+                innings = 2;
+                aiScore = 0;
+                aiWickets = 0;
+                balls = 0;
+                overs = 0;
+                totalBalls = 0;
+                updateInningLabels();
+                refreshScoreUI();
+                document.getElementById("commentary").innerHTML = `📢 INNINGS BREAK! ${aiTeam?.name} needs ${target-1} runs to win. Now AI bats! 📢`;
+                return true;
+            } else {
+                matchFinished = true;
+                let winner = (aiScore >= target) ? aiTeam?.name : userTeam?.name;
+                document.getElementById("commentary").innerHTML = `🏁 MATCH OVER! ${winner} WINS! 🏁 Final: ${aiTeam?.short} ${aiScore}/${aiWickets}`;
+                refreshScoreUI();
+                return true;
+            }
+        }
+        
+        if (totalBalls >= 120) {
+            if (innings === 1) {
+                target = userScore + 1;
+                innings = 2;
+                aiScore = 0;
+                aiWickets = 0;
+                balls = 0;
+                overs = 0;
+                totalBalls = 0;
+                updateInningLabels();
+                refreshScoreUI();
+                document.getElementById("commentary").innerHTML = `📢 20 OVERS DONE! ${aiTeam?.name} needs ${target-1} runs to win.`;
+                return true;
+            } else {
+                matchFinished = true;
+                let winner = (aiScore >= target) ? aiTeam?.name : userTeam?.name;
+                document.getElementById("commentary").innerHTML = `🏁 MATCH END! ${winner} WINS! 🏁`;
+                refreshScoreUI();
+                return true;
+            }
+        }
+        
+        if (innings === 2 && target !== null && aiScore >= target) {
+            matchFinished = true;
+            document.getElementById("commentary").innerHTML = `🏆🏆 ${aiTeam?.name} CHASES DOWN THE TARGET! VICTORY! 🏆🏆`;
+            refreshScoreUI();
+            return true;
+        }
+        return false;
+    }
+
+    // HAND CRICKET CORE LOGIC
+    function playHandCricket(userNumber) {
+        if (matchFinished) {
+            document.getElementById("commentary").innerHTML = "🏁 Match is over! Select a new match or press RESTART.";
+            return;
+        }
+        
+        if (!userTeam || !aiTeam) {
+            document.getElementById("commentary").innerHTML = "⚠️ Please select a match first! ⚠️";
+            return;
+        }
+        
+        if (innings === 1) {
+            let aiBowlingNumber = Math.floor(Math.random() * 7);
+            if (userNumber === aiBowlingNumber) {
+                userWickets++;
+                triggerOutAnimation();
+                document.getElementById("commentary").innerHTML = `😵 OUT! Your ${userNumber} matched AI's ${aiBowlingNumber}. ${userTeam.short} loses a wicket! ${userWickets}/10`;
+            } else {
+                let runs = userNumber;
+                userScore += runs;
+                let msg = `🎲 Your ${userNumber} vs AI ${aiBowlingNumber} → ${runs} runs! Score: ${userScore}/${userWickets}`;
+                if (runs === 0) msg = `🔸 Dot ball! Your ${userNumber} vs AI ${aiBowlingNumber} → No runs.`;
+                if (runs === 6) msg = `🚀 MASSIVE SIX! Your ${userNumber} vs AI ${aiBowlingNumber}! ${userScore}/${userWickets}`;
+                document.getElementById("commentary").innerHTML = msg;
+            }
+        } else {
+            let aiBattingNumber = Math.floor(Math.random() * 7);
+            if (userNumber === aiBattingNumber) {
+                aiWickets++;
+                triggerOutAnimation();
+                document.getElementById("commentary").innerHTML = `🎯 WICKET! Your ${userNumber} matched AI's ${aiBattingNumber}. ${aiTeam.short} loses wicket! ${aiWickets}/10 | Need ${target - aiScore} more`;
+            } else {
+                let runs = aiBattingNumber;
+                aiScore += runs;
+                let msg = `🏏 AI chose ${aiBattingNumber} | Your ${userNumber} (mismatch) → ${runs} runs! ${aiTeam.short}: ${aiScore}/${aiWickets}`;
+                if (runs === 0) msg = `🔸 Dot ball! AI ${aiBattingNumber} vs Your ${userNumber} → No runs. Need ${target - aiScore}`;
+                if (runs === 6) msg = `🤯 AI HITS SIX! ${aiBattingNumber} runs! ${aiTeam.short} now ${aiScore}/${aiWickets}`;
+                document.getElementById("commentary").innerHTML = msg;
+            }
+        }
+        
+        balls++;
+        totalBalls++;
+        if (balls === 6) {
+            overs++;
+            balls = 0;
+        }
+        
+        refreshScoreUI();
+        
+        let ended = checkInningsEnd();
+        if (!ended && ((innings === 1 && userWickets >= 10) || (innings === 2 && aiWickets >= 10))) {
+            checkInningsEnd();
+        }
+        if (!ended && totalBalls >= 120) {
+            checkInningsEnd();
+        }
+        if (!ended && innings === 2 && target !== null && aiScore >= target) {
+            checkInningsEnd();
+        }
+        refreshScoreUI();
+        
+        if (matchFinished) {
+            document.getElementById("commentary").innerHTML = document.getElementById("commentary").innerHTML + "<br>🏁 Match Concluded! Select a new match above.";
+        }
+    }
+
+    // Select Match
+    function selectMatch(match, index) {
+        userTeam = iplTeams[match.team1];
+        aiTeam = iplTeams[match.team2];
+        currentMatchIndex = index;
+        
+        // Reset game state
+        innings = 1;
+        userScore = 0;
+        userWickets = 0;
+        aiScore = 0;
+        aiWickets = 0;
+        balls = 0;
+        overs = 0;
+        totalBalls = 0;
+        target = null;
+        matchFinished = false;
+        
+        updateVSDisplay();
+        updateInningLabels();
+        refreshScoreUI();
+        document.getElementById("commentary").innerHTML = `🎉 MATCH STARTED! ${userTeam.name} vs ${aiTeam.name}. You are batting first! Choose a number (0-6). Same number as AI = OUT! 🎉`;
+        
+        // Highlight selected match
+        const matchCards = document.querySelectorAll(".match-card");
+        matchCards.forEach((card, i) => {
+            if (i === index) {
+                card.classList.add("selected");
+            } else {
+                card.classList.remove("selected");
+            }
+        });
+    }
+    
+    function resetMatch() {
+        if (userTeam && aiTeam) {
+            innings = 1;
+            userScore = 0;
+            userWickets = 0;
+            aiScore = 0;
+            aiWickets = 0;
+            balls = 0;
+            overs = 0;
+            totalBalls = 0;
+            target = null;
+            matchFinished = false;
+            updateInningLabels();
+            refreshScoreUI();
+            document.getElementById("commentary").innerHTML = `🔄 Match Restarted! ${userTeam.name} vs ${aiTeam.name}. You are batting first! Choose a number. 🔄`;
+        } else {
+            document.getElementById("commentary").innerHTML = "⚠️ Please select a match first! ⚠️";
+        }
+    }
+    
+    // Render matches grid
+    function renderMatchesGrid() {
+        const grid = document.getElementById("matchesGrid");
+        grid.innerHTML = "";
+        requestedMatches.forEach((match, idx) => {
+            const team1 = iplTeams[match.team1];
+            const team2 = iplTeams[match.team2];
+            const btn = document.createElement("div");
+            btn.className = "match-card";
+            btn.innerHTML = `<span class="match-logo">${team1.logo}</span> ${team1.short} vs ${team2.short} <span class="match-logo">${team2.logo}</span>`;
+            btn.onclick = () => selectMatch(match, idx);
+            grid.appendChild(btn);
+        });
+    }
+    
+    // Event Bindings
+    function bindEvents() {
+        const handBtns = document.querySelectorAll(".hand-btn");
+        handBtns.forEach(btn => {
+            btn.removeEventListener("click", handHandler);
+            btn.addEventListener("click", handHandler);
+        });
+        document.getElementById("resetMatchBtn").addEventListener("click", () => resetMatch());
+    }
+    
+    function handHandler(e) {
+        let handValue = parseInt(e.currentTarget.getAttribute("data-hand"));
+        if (isNaN(handValue)) return;
+        playHandCricket(handValue);
+    }
+    
+    // Initialize with first match (CSK vs RCB)
+    function init() {
+        renderMatchesGrid();
+        bindEvents();
+        // Set default match (CSK vs RCB)
+        selectMatch(requestedMatches[0], 0);
+    }
+    
+    init();
+</script>
+</body>
+</html>
